@@ -1,0 +1,30 @@
+{
+  "products": [
+    {
+      "id": "cloud_run",
+      "name": "Cloud Microservice Instance",
+      "description": "Serverless container handling up to 1M requests/mo",
+      "pricing_strategy": {
+        "base_price": 50.00,
+        "min_price": 40.00,
+        "max_price": 85.00,
+        "urgency_multiplier": 1.5
+      }
+    },
+    {
+      "id": "consulting",
+      "name": "Senior Solutions Architect",
+      "description": "Hourly consultation for architecture review",
+      "pricing_strategy": {
+        "base_price": 200.00,
+        "min_price": 150.00,
+        "max_price": 350.00,
+        "urgency_multiplier": 1.75
+      }
+    }
+  ],
+  "global_rules": {
+    "high_urgency_threshold": 8,
+    "competitor_undercut": 0.10
+  }
+}

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal for {{ p.client_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 text-slate-800 p-8 font-sans antialiased">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        
+        <div class="bg-slate-900 text-white p-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-sm uppercase tracking-wider text-slate-400 mb-1">Prepared For</div>
+                    <h1 class="text-3xl font-bold">{{ p.client_name }}</h1>
+                    <p class="mt-4 text-slate-300 max-w-xl text-sm leading-relaxed">{{ p.executive_summary }}</p>
+                </div>
+             
+                   <div class="text-right">
+    <div class="bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10">
+        <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Service Tier</div>
+        
+        {% if p.urgency_detected > 7 %}
+            <div class="flex items-center space-x-2 text-emerald-400">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <span class="text-lg font-bold">Critical Response (SLA 1hr)</span>
+            </div>
+        {% elif p.urgency_detected < 4 %}
+            <div class="text-lg font-bold text-blue-300">Standard Scheduling</div>
+        {% else %}
+            <div class="text-lg font-bold text-white">Priority Access</div>
+        {% endif %}
+    </div>
+</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <table class="w-full mb-8 text-left border-collapse">
+                <thead>
+                    <tr class="text-xs text-slate-500 uppercase border-b border-slate-200">
+                        <th class="py-3 font-semibold">Service / Product</th>
+                        <th class="py-3 font-semibold">Tier</th>
+                        <th class="py-3 text-right font-semibold">Cost</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {% for item in p.line_items %}
+                    <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                        <td class="py-4 pr-4">
+                            <div class="font-bold text-slate-900">{{ item.name }}</div>
+                            <div class="text-slate-500 mt-1">{{ item.description }}</div>
+                        </td>
+                        <td class="py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {{ 'bg-red-100 text-red-800' if 'Premium' in item.price_tier else 'bg-green-100 text-green-800' }}">
+                                {{ item.price_tier }}
+                            </span>
+                        </td>
+                        <td class="py-4 text-right font-mono text-slate-700">
+                            ${{ item.total_price }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 mb-8">
+                <div class="flex justify-end text-right">
+                    <div class="space-y-2">
+                        <div class="text-sm text-slate-500">Subtotal: ${{ p.subtotal }}</div>
+                        
+                        {% if p.discount_amount > 0 %}
+                        <div class="text-sm text-green-600 font-medium">
+                            Discount: -${{ p.discount_amount }}
+                            <span class="block text-xs text-green-600/70">({{ p.discount_reason }})</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="text-3xl font-bold text-slate-900 pt-2 border-t border-slate-200 mt-2">
+                            ${{ p.final_total }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-slate-800 mb-4">{{ p.chart.title }}</h3>
+                <div class="h-64 bg-white border border-slate-100 rounded-lg p-4">
+                    <canvas id="dealChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        {
+            const ctx = document.getElementById('dealChart').getContext('2d');
+        
+        // Jinja to JS data passing
+        const labels = {{ p.chart.labels | tojson }};
+        
+        const colors = {{ p.chart.colors | tojson }};
+
+        const values = {{ p.chart['values'] | tojson }};
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'USD Value',
+                    data: values,
+                    backgroundColor: colors,
+                    borderRadius: 6,
+                    barThickness: 40
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });}
+    </script>
+</body>
+</html>
